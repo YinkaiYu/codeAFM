@@ -1,6 +1,4 @@
-# DQMC code for fermion-boson coupling models
-
-# 费米子玻色子耦合模型的行列式蒙特卡罗算法
+# DQMC code for fermion-boson coupling models 费米子玻色子耦合模型的行列式蒙特卡罗算法
 
 This project is used to implement the fermi surface coupled SDW bosonic field.
 
