@@ -41,7 +41,7 @@ contains
         real(kind=8) :: new1, old1, new2, old2, new3, old3, new4, old4, action_dif
         real(kind=8) :: vec1(Nspin), vec2(Nspin)
         integer :: jj, nf
-! phonon kinetics
+! boson kinetics
         vec1(:) = this%phi(:, ii, npbc(ntau+1, Ltrot)) - phi_new(:, ii, ntau)
         vec2(:) = this%phi(:, ii, npbc(ntau-1, Ltrot)) - phi_new(:, ii, ntau)
         vec1 = vec1 / Dtau
@@ -52,7 +52,7 @@ contains
         vec1 = vec1 / Dtau
         vec2 = vec2 / Dtau
         old1 = sqr_vec(vec1) + sqr_vec(vec2)
-! phonon-phonon interactions
+! boson-boson interactions
         new2 = 0.d0; old2 = 0.d0
         do nf = 1, 2*Nbond
             jj = Latt%L_bonds(ii, nf)
@@ -61,7 +61,7 @@ contains
             vec2(:) = this%phi(:, ii, ntau) - this%phi(:, jj, ntau)
             old2 = old2 + sqr_vec(vec2)
         enddo
-! phonon mass term and quartic terms
+! boson mass term and quartic terms
         vec1(:) = phi_new(:, ii, ntau)
         new3 = sqr_vec(vec1)
         new4 = new3 * new3
@@ -69,7 +69,7 @@ contains
         old3 = sqr_vec(vec2)
         old4 = old3 * old3
         
-        action_dif = (new1 - old1) * Dtau/(2.0*velocity*velocity) + (new2 - old2) * (Dtau/2.0) &
+        action_dif = (new1 - old1) * Dtau/(velocity*velocity) + (new2 - old2) * (Dtau/2.0) &
             &   + (new3 - old3) * (Dtau*mass/2.0) + (new4 - old4) * (Dtau*quartic/4.0)
         ratio_boson = exp(-action_dif)
         return
@@ -91,14 +91,14 @@ contains
 !        new3 = 0.d0; old3 = 0.d0
 !        new4 = 0.d0; old4 = 0.d0
 !        do nt = 1, Ltrot
-! phonon kinetics
+! boson kinetics
 !            vec(:) = phi_new(:, ii, npbc(nt+1, Ltrot)) - phi_new(:, ii, nt)
 !            vec = vec/Dtau
 !            new1 = new1 + sqr_vec(vec)
 !            vec(:) = this%phi(:, ii, npbc(nt+1, Ltrot)) - this%phi(:, ii, nt)
 !            vec = vec/Dtau
 !            old1 = old1 + sqr_vec(vec)
-! phonon-phonon interactions
+! boson-boson interactions
 !            do nf = 1, 2*Nbond
 !                jj = Latt%L_bonds(ii, nf)
 !                vec(:) = phi_new(:, ii, nt) - this%phi(:, jj, nt)
@@ -106,7 +106,7 @@ contains
 !                vec(:) = this%phi(:, ii, nt) - this%phi(:, jj, nt)
 !                old2 = old2 + sqr_vec(vec)
 !            enddo
-! phonon mass term and quartic terms
+! boson mass term and quartic terms
 !            vec(:) = phi_new(:, ii, nt)
 !            tmp = sqr_vec(vec)
 !            new3 = new3 + tmp
@@ -116,13 +116,13 @@ contains
 !            old3 = old3 + tmp
 !            old4 = old4 + tmp * tmp
 !        enddo
-!        action_dif = (new1 - old1) * Dtau/(2.0*velocity*velocity) + (new2 - old2) * (Dtau/2.0) &
+!        action_dif = (new1 - old1) * Dtau/(velocity*velocity) + (new2 - old2) * (Dtau/2.0) &
 !            &   + (new3 - old3) * (Dtau*mass/2.0) + (new4 - old4) * (Dtau*quartic/4.0)
 !        ratio_boson = exp(-action_dif)
 !        return
 !    end function m_bosonratio_global_time
     
-! without phonon kinetics and mutual phonon interactions
+! without boson kinetics and mutual boson interactions
     real(kind=8) function m_bosonratio_global_spacetime(this, phi_new) result(ratio_boson)
 ! Arguments: 
         class(SpinConf), intent(in) :: this
@@ -136,7 +136,7 @@ contains
         new4 = 0.d0; old4 = 0.d0
         do nt = 1, Ltrot
             do ii = 1, Lq
-! phonon mass term and quartic terms
+! boson mass term and quartic terms
                 vec(:) = phi_new(:, ii, nt)
                 tmp = sqr_vec(vec)
                 new3 = new3 + tmp

@@ -6,59 +6,63 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: PI = acos(-1.d0)
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
-    integer,                    parameter           :: Norb = 2 ! orbital (x\up) or (y\down) in a single sector
-    integer,                    parameter           :: Nsub = 2 ! sublattice
-    integer,                    parameter           :: Nbond = 2 ! bonds per site; lattice direction
-    integer,                    parameter           :: Nspin = 2 ! O(2) spin direction
-    integer,                    public                 :: Nlx, Nly, NlxTherm, NlyTherm
-    integer,                    public                 :: Lq, LqTherm
-    integer,                    public                 :: Ndim
-    real(kind=8),           public                 :: Dtau
-    real(kind=8),           public                 :: Beta
-    integer,                    public                 :: Ltrot, LtrotTherm
-    integer,                    public                 :: Lfam
+    integer,                parameter           :: Norb = 2 ! orbital (x\up) or (y\down) in a single sector; band index
+    integer,                parameter           :: Nsub = 2 ! sublattice; square lattice
+    integer,                parameter           :: Nbond = 2 ! bonds per site; lattice direction
+    integer,                parameter           :: Nspin = 3 ! O(3) spin direction; 3-component boson field 
+    integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
+    integer,                public              :: Lq, LqTherm
+    integer,                public              :: Ndim
+    real(kind=8),           public              :: Dtau
+    real(kind=8),           public              :: Beta
+    integer,                public              :: Ltrot, LtrotTherm
+    integer,                public              :: Lfam
 ! Hamiltonian parameters
     real(kind=8),           public,     save    :: RT(Norb, Nbond)
-    real(kind=8),           public,     save    :: quartic = 1.d0 ! quartic coupling u
-    real(kind=8),           public                 :: mass ! quadratic mass term r
-    real(kind=8),           public                 :: lambda ! Yukawa coupling lambda
-    real(kind=8),           public                 :: mu ! chemical potential mu
-    real(kind=8),           public,     save    :: velocity = 2.d0 ! boson velocitiy c
+    real(kind=8),           public,     save    :: quartic = 0.d0 ! quartic coupling u
+    real(kind=8),           public              :: mass ! quadratic mass term r
+    real(kind=8),           public              :: lambda ! Yukawa coupling lambda
+    real(kind=8),           public              :: hopping1 ! parallel hopping t_hx = t_vy
+    real(kind=8),           public              :: hopping2 ! vertical hopping t~_vx = - t~_hy
+    real(kind=8),           public              :: mu1 ! chemical potential mu_x
+    real(kind=8),           public              :: mu2 ! chemical potential mu_y
+    real(kind=8),           public,     save    :: velocity = 3.d0 ! boson velocitiy c
+    integer,                public              :: Nflavor ! fermion flavor N_f
 ! update parameters
-    real(kind=8),           public                 :: valr0
-    logical,                    public                 :: is_global ! global update switch: Wolff-shift joint update
-    integer,                    public                 :: Nglobal
-    real(kind=8),           public                 :: valrs(Nbond)
+    real(kind=8),           public              :: valr0
+    logical,                public              :: is_global ! global update switch: Wolff-shift joint update
+    integer,                public              :: Nglobal
+    real(kind=8),           public              :: valrs(Nbond)
 ! initial state parameters
-    real(kind=8),           public                 :: NB_field ! perpendicular flux quanta
-    real(kind=8),           public                 :: inconf ! Gaussian amplitude of initial phonon fields
-    integer,                    public                 :: absolute ! type of initial phonon field configuration
-    real(kind=8),           public                 :: init(Nspin) ! initial phonon field balance position
+    real(kind=8),           public              :: NB_field ! perpendicular flux quanta
+    real(kind=8),           public              :: inconf ! Gaussian amplitude of initial bosonic fields
+    integer,                public              :: absolute ! type of initial bosonic field configuration
+    real(kind=8),           public              :: init(Nspin) ! initial bosonic field balance position
 ! process control parameters
-    logical,                    public                 :: is_tau ! whether to calculate time-sliced Green function
-    integer,                    public                 :: Nthermal ! calculate time-sliced Green function from the (Nthermal + 1)-th bin
-    logical,                    public                 :: is_warm ! bosonic warm-up switch
-    integer,                    public                 :: Nwarm
-    real(kind=8),           public                 :: valrt(Nspin)
-    integer,                    public                 :: Nst
-    integer,                    public                 :: Nwrap
-    integer,                    public                 :: Nbin
-    integer,                    public                 :: Nsweep
-    integer,                    public                 :: ISIZE, IRANK, IERR
+    logical,                public              :: is_tau ! whether to calculate time-sliced Green function
+    integer,                public              :: Nthermal ! calculate time-sliced Green function from the (Nthermal + 1)-th bin
+    logical,                public              :: is_warm ! bosonic warm-up switch
+    integer,                public              :: Nwarm
+    real(kind=8),           public              :: valrt(Nspin)
+    integer,                public              :: Nst
+    integer,                public              :: Nwrap
+    integer,                public              :: Nbin
+    integer,                public              :: Nsweep
+    integer,                public              :: ISIZE, IRANK, IERR
     
 contains
     subroutine read_input()
         include 'mpif.h'
         if (IRANK == 0) then
             open(unit=20, file='paramC_sets.txt', status='unknown')
-            read(20,*) mass, lambda, mu
+            read(20,*) mass, lambda, hopping1, hopping2, mu1, mu2, Nflavor
             read(20,*) Nlx, Nly, Ltrot, Beta
             read(20,*) NlxTherm, NlyTherm, LtrotTherm
             read(20,*) Nwrap, Nbin, Nsweep, valr0
             read(20,*) is_tau, Nthermal
-            read(20,*) is_warm, Nwarm, valrt(1), valrt(2)
-            read(20,*) is_global, Nglobal, valrs(1), valrs(2)
-            read(20,*) inconf, absolute, init(1), init(2)
+            read(20,*) is_warm, Nwarm, valrt(1), valrt(2), valrt(3)
+            read(20,*) is_global, Nglobal, valrs(1), valrs(2), valrs(3)
+            read(20,*) inconf, absolute, init(1), init(2), init(3)
             read(20,*) NB_field
             close(20)
         endif 
@@ -66,13 +70,17 @@ contains
         call MPI_BCAST(Beta, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(mass, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(lambda, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(mu, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(hopping1, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(hopping2, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(mu1, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(mu2, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(valr0, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(valrs, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(valrt, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(inconf, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(init, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(NB_field, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(Nflavor, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(absolute, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nlx, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nly, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
@@ -93,10 +101,10 @@ contains
     end subroutine read_input
     
     subroutine Params_set()
-        RT(1,1) = 1.d0 ! (x\up) orbital; lattice horizontal direction
-        RT(1,2) = 0.5d0 ! (x\up) orbital; lattice vertical direction
-        RT(2,1) = 0.5d0 ! (y\down) orbital; lattice horizontal direction
-        RT(2,2) = 1.d0 ! (y\down) orbital; lattice vertical direction
+        RT(1,1) = hopping1 ! (x\up) orbital; lattice horizontal direction
+        RT(1,2) = hopping2 ! (x\up) orbital; lattice vertical direction
+        RT(2,1) = hopping2 ! (y\down) orbital; lattice horizontal direction
+        RT(2,2) = hopping1 ! (y\down) orbital; lattice vertical direction
         Lq = Nlx * Nly
         LqTherm = NlxTherm * NlyTherm
         Dtau = Beta / dble(Ltrot)
@@ -144,18 +152,20 @@ contains
         if (IRANK == 0) then
             open (unit=50, file='info.txt', status='unknown', action="write")
             write(50,*) '========================='
-            write(50,*) 'SU(N) t-U-J, Projector '
+            write(50,*) 'SU(2) fermi-surface coupling to O(3) SDW boson'
             write(50,*) 'Linear lengh Lx                                :', Nlx
             write(50,*) 'Linear lengh Ly                                :', Nly
             write(50,*) 'Hopping x-orbital horizontal                   :', RT(1,1)
             write(50,*) 'Hopping x-orbital vertical                     :', RT(1,2)
             write(50,*) 'Hopping y-orbital horizontal                   :', RT(2,1)
             write(50,*) 'Hopping y-orbital vertical                     :', RT(2,2)
-            write(50,*) 'Phonon mass                                    :', mass
-            write(50,*) 'Yukawa coupling                                :', lambda
-            write(50,*) 'Phonon velocity                                :', velocity
-            write(50,*) 'Phonon quartic term                            :', quartic
-            write(50,*) 'uniform chemical potential mu                  :', mu
+            write(50,*) 'Bosonic mass r                                 :', mass
+            write(50,*) 'Yukawa coupling lambda=g/sqrt(N_f)             :', lambda
+            write(50,*) 'Boson velocity c                               :', velocity
+            write(50,*) 'Boson quartic term u                           :', quartic
+            write(50,*) 'x-orbital chemical potential mu_x              :', mu1
+            write(50,*) 'y-orbital chemical potential mu_y              :', mu2
+            write(50,*) 'fermion flavor N_f                             :', Nflavor
             write(50,*) 'Local update Boson field magnitude Shift       :', valr0
             if (is_global) then
                 write(50,*) '# Global                                   :', Nglobal ! global Metropolis algorithm
