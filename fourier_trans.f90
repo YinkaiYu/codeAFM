@@ -73,8 +73,8 @@ contains
                 do nf = 1, Nbond
                     write(20,*) gr(nr, nf)
                 enddo
-            elseif (size(gr, 2) == Lq) then ! (Nspin, Lq)
-                do nf = 1, Nspin
+            elseif (size(gr, 2) == Lq) then ! (Nboson, Lq)
+                do nf = 1, Nboson
                     write(20,*) gr(nf, nr)
                 enddo
             else
@@ -294,7 +294,7 @@ contains
 !        complex(kind=8), dimension(Lq, Nbond, Nbond) :: Collect3
         real(kind=8), dimension(Lq) :: Collect1
         real(kind=8), dimension(Lq, Nbond) :: Collect2
-        real(kind=8), dimension(Nspin, Lq) :: Collect2prime
+        real(kind=8), dimension(Nboson, Lq) :: Collect2prime
         real(kind=8) :: Collect0, Collect1prime(Nbond)
         integer :: N
 ! test:
@@ -306,17 +306,17 @@ contains
         call MPI_REDUCE(Obs%den_occ, Collect1, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%den_occ = Collect1/dble(ISIZE)
         
-        N = Nspin * Lq
+        N = Nboson * Lq
         Collect2prime = 0.d0
         call MPI_REDUCE(Obs%spin_occ, Collect2prime, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%spin_occ = Collect2prime/dble(ISIZE)
         
         Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nspin, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
         
         Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_order, Collect1prime, Nspin, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        call MPI_REDUCE(Obs%spin_order, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
         
         Collect0 = 0.d0

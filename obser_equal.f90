@@ -6,7 +6,7 @@ module ObserEqual_mod
     type, public :: ObserEqual
         real(kind=8), dimension(:), allocatable :: den_occ
         real(kind=8), dimension(:,:), allocatable :: bond_occ, spin_occ
-        real(kind=8) :: el_ke(Nbond), density, spin_avg(Nspin), spin_order(Nspin), diam
+        real(kind=8) :: el_ke(Nbond), density, spin_avg(Nboson), spin_order(Nboson), diam
     contains
         procedure :: make => Obs_equal_make
         final :: Obs_equal_clear
@@ -18,7 +18,7 @@ module ObserEqual_mod
 contains
     subroutine Obs_equal_make(this)
         class(ObserEqual), intent(inout) :: this
-        allocate( this%spin_occ(Nspin, Lq), this%den_occ(Lq), this%bond_occ(Lq, Nbond) )
+        allocate( this%spin_occ(Nboson, Lq), this%den_occ(Lq), this%bond_occ(Lq, Nbond) )
         return
     end subroutine Obs_equal_make
     
@@ -81,7 +81,7 @@ contains
             no = Latt%o_list(i, 2)
             if (Latt%b_list(ii, 2) == 1) sign = 1
             if (Latt%b_list(ii, 2) == 2) sign = -1
-            do ns = 1, Nspin
+            do ns = 1, Nboson
                 this%spin_occ(ns, ii) = this%spin_occ(ns, ii) + NsigL_K%phi(ns, ii, ntau) * sign
                 this%spin_avg(ns) = this%spin_avg(ns) + NsigL_K%phi(ns, ii, ntau) / dble(Lq)
                 this%spin_order(ns) = this%spin_order(ns) + NsigL_K%phi(ns, ii, ntau) * sign / dble(Lq)

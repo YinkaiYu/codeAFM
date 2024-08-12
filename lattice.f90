@@ -3,7 +3,8 @@ module MyLattice ! definition on space geometry
     implicit none
     
     type, public :: SquareLattice
-        integer, dimension(:,:), allocatable :: o_list, inv_o_list, n_list, inv_n_list, b_list, inv_b_list, t_list, inv_t_list
+        integer, dimension(:,:,:), allocatable :: inv_dim_list, 
+        integer, dimension(:,:), allocatable :: dim_list, o_list, inv_o_list, n_list, inv_n_list, b_list, inv_b_list, t_list, inv_t_list
         integer, dimension(:,:), allocatable :: L_bonds, nn_bonds, LT_bonds, imj
         real(kind=8), dimension(:,:), allocatable :: xk_v, aimj_v, k_dot_r
         real(kind=8) :: a1_v(2), a2_v(2), b1_v(2), b2_v(2)
@@ -20,10 +21,24 @@ module MyLattice ! definition on space geometry
 contains
     subroutine Lattice_make(Latt)
         class(SquareLattice), intent(inout) :: Latt
-        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny
+        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny, ns
         integer :: n1, n2, ndix, ii, jj, ix, jx, iy, jy, nt, iit, imjx, imjy
         
-        allocate(Latt%o_list(Ndim, 1:2), Latt%inv_o_list(Lq, Norb))
+        allocate(Latt%dim_list(Ndim, 1:2), Latt%inv_dim_list(Lq, Norb))
+        nc = 0
+        do ns = 1, Nspin ! ns is the spin index
+            do no = 1, Norb ! no is the orbital index
+                do n = 1, Lq
+                    nc = nc + 1
+                    Latt%dim_list(nc, 1) = n
+                    Latt%dim_list(nc, 2) = no
+                    Latt%dim_list(nc, 3) = ns
+                    Latt%inv_dim_list(n, no, ns) = nc
+                enddo
+            enddo
+        enddo
+        
+        allocate(Latt%o_list(Nsite, 1:2), Latt%inv_o_list(Lq, Norb))
         nc = 0
         do no = 1, Norb ! no is the orbital index
             do n = 1, Lq
@@ -151,6 +166,7 @@ contains
     
     subroutine Lattice_clear(this)
         type(SquareLattice), intent(inout) :: this
+        deallocate(this%dim_list, this%inv_dim_list)
         deallocate(this%o_list, this%inv_o_list, this%n_list, this%inv_n_list, this%b_list, this%inv_b_list, this%t_list, this%inv_t_list)
         deallocate(this%L_bonds, this%nn_bonds, this%LT_bonds, this%imj)
         deallocate(this%xk_v, this%aimj_v, this%k_dot_r)

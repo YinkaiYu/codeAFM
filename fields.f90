@@ -21,7 +21,7 @@ module Fields_mod
 contains
     subroutine SpinConf_make(this)
         class(SpinConf), intent(inout) :: this
-        allocate(this%phi(Nspin, Lq, Ltrot))
+        allocate(this%phi(Nboson, Lq, Ltrot))
         return
     end subroutine SpinConf_make
     
@@ -34,12 +34,12 @@ contains
     real(kind=8) function m_bosonratio_local(this, phi_new, ii, ntau, Latt) result(ratio_boson)
 ! Arguments: 
         class(SpinConf), intent(in) :: this
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new
         integer, intent(in) :: ii, ntau
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
         real(kind=8) :: new1, old1, new2, old2, new3, old3, new4, old4, action_dif
-        real(kind=8) :: vec1(Nspin), vec2(Nspin)
+        real(kind=8) :: vec1(Nboson), vec2(Nboson)
         integer :: jj, nf
 ! boson kinetics
         vec1(:) = this%phi(:, ii, npbc(ntau+1, Ltrot)) - phi_new(:, ii, ntau)
@@ -78,13 +78,13 @@ contains
 !    real(kind=8) function m_bosonratio_global_time(this, phi_new, ii, Latt) result(ratio_boson)
 ! Arguments: 
 !        class(SpinConf), intent(in) :: this
-!        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new
+!        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new
 !        integer, intent(in) :: ii
 !        class(SquareLattice), intent(in) :: Latt
 ! Local: 
 !        real(kind=8) :: new1, old1, new2, old2, new3, old3, new4, old4, action_dif, tmp
 !        integer :: nt, jj, nf
-!        real(kind=8) :: vec(Nspin)
+!        real(kind=8) :: vec(Nboson)
         
 !        new1 = 0.d0; old1 = 0.d0
 !        new2 = 0.d0; old2 = 0.d0
@@ -126,11 +126,11 @@ contains
     real(kind=8) function m_bosonratio_global_spacetime(this, phi_new) result(ratio_boson)
 ! Arguments: 
         class(SpinConf), intent(in) :: this
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new
 ! Local: 
         real(kind=8) :: new3, old3, new4, old4, action_dif, tmp
         integer :: nt, ii
-        real(kind=8) :: vec(Nspin)
+        real(kind=8) :: vec(Nboson)
         
         new3 = 0.d0; old3 = 0.d0
         new4 = 0.d0; old4 = 0.d0
@@ -157,7 +157,7 @@ contains
         integer, intent(out) :: iseed
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
-        real(kind=8), dimension(Nspin, LqTherm, LtrotTherm) :: phi_therm
+        real(kind=8), dimension(Nboson, LqTherm, LtrotTherm) :: phi_therm
         
         call conf_therm_in(phi_therm, iseed)
         call conf_transfer(Conf%phi, phi_therm, Latt)
@@ -168,14 +168,14 @@ contains
 !#define DEC
         include 'mpif.h'
 ! Arguments: 
-        real(kind=8), dimension(Nspin, LqTherm, LtrotTherm), intent(inout) :: phi_therm
+        real(kind=8), dimension(Nboson, LqTherm, LtrotTherm), intent(inout) :: phi_therm
         integer, intent(out) :: iseed
 ! Local: 
         integer :: status(MPI_STATUS_SIZE)
         integer :: iseed0, itmp
         integer :: ii, ns, nt, N
         real(kind=8), external :: ranf
-        real(kind=8), dimension(Nspin, LqTherm, LtrotTherm) :: phi_itmp
+        real(kind=8), dimension(Nboson, LqTherm, LtrotTherm) :: phi_itmp
         
         if (IRANK == 0 ) then
             open(unit=30, file='confin.txt', status='unknown')
@@ -191,7 +191,7 @@ contains
                     read(10,*) itmp ! read the following rows of "seeds" as the seeds for other nodes. Each node has only one seed to generate the space-time auxiliary fields
                     call conf_set(phi_itmp, itmp)
                     call MPI_SEND(itmp, 1, MPI_Integer, N, N, MPI_COMM_WORLD, IERR)
-					call MPI_SEND(phi_itmp, LqTherm*Nspin*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
+					call MPI_SEND(phi_itmp, LqTherm*Nboson*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
                     print '("after sending message from master ", i3.1, " to Rank ", i3.1)', IRANK, N
                 enddo
 ! Set node zero.
@@ -203,7 +203,7 @@ contains
 ! Setup Node 0
                 do nt = 1, LtrotTherm
                     do ii = 1, LqTherm
-                        do ns = 1, Nspin
+                        do ns = 1, Nboson
                             read(30,*) phi_therm(ns, ii, nt)
                         enddo
                     enddo
@@ -212,18 +212,18 @@ contains
                     read(30,*) itmp
                     do nt = 1, LtrotTherm
                         do ii = 1, LqTherm
-                            do ns = 1, Nspin
+                            do ns = 1, Nboson
                                 read(30,*) phi_itmp(ns, ii, nt)
                             enddo
                         enddo
                     enddo
                     call MPI_SEND(itmp, 1, MPI_Integer, N, N, MPI_COMM_WORLD, IERR)
-					call MPI_SEND(phi_itmp, Nspin*LqTherm*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
+					call MPI_SEND(phi_itmp, Nboson*LqTherm*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
                 enddo
             endif
         else
             call MPI_RECV(iseed, 1, MPI_Integer, 0, IRANK, MPI_COMM_WORLD, STATUS, IERR)
-			call MPI_RECV(phi_therm, Nspin*LqTherm*LtrotTherm, MPI_Real8, 0, IRANK + 1024, MPI_COMM_WORLD, STATUS, IERR)
+			call MPI_RECV(phi_therm, Nboson*LqTherm*LtrotTherm, MPI_Real8, 0, IRANK + 1024, MPI_COMM_WORLD, STATUS, IERR)
             print '("Rank ", i3.1, " after receiving message. ")', IRANK
         endif
         if (IRANK == 0 ) then
@@ -233,7 +233,7 @@ contains
     end subroutine conf_therm_in
 
     subroutine conf_set(phi, itmp)
-        real(kind=8), dimension(Nspin, LqTherm, LtrotTherm), intent(out) :: phi
+        real(kind=8), dimension(Nboson, LqTherm, LtrotTherm), intent(out) :: phi
         integer, intent(inout) :: itmp
 ! Local: 
         integer :: ii, ns, nt
@@ -243,7 +243,7 @@ contains
         if (absolute == 1) then
             do nt = 1, LtrotTherm
                 do ii = 1, LqTherm
-                    do ns = 1, Nspin
+                    do ns = 1, Nboson
                         X = ranf(itmp)
                         phi(ns, ii, nt) = init(ns) + inconf * (X - 0.5)
                     enddo
@@ -252,7 +252,7 @@ contains
         elseif (absolute == 2) then
             do nt = 1, LtrotTherm
                 do ii = 1, LqTherm
-                    do ns = 1, Nspin
+                    do ns = 1, Nboson
                         X = rng_Gaussian(itmp)
                         phi(ns, ii, nt) = init(ns) + inconf * X
                     enddo
@@ -261,7 +261,7 @@ contains
         elseif (absolute == 3) then
             do nt = 1, LtrotTherm
                 do ii = 1, LqTherm
-                    do ns = 1, Nspin
+                    do ns = 1, Nboson
                         X = rng_Gaussian(itmp)
                         phi(ns, ii, nt) = init(ns) + inconf * abs(X)
                     enddo
@@ -274,8 +274,8 @@ contains
     end subroutine conf_set
     
     subroutine conf_transfer(phi, phi_therm, Latt)
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(inout) :: phi
-        real(kind=8), dimension(Nspin, LqTherm, LtrotTherm), intent(in) :: phi_therm
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(inout) :: phi
+        real(kind=8), dimension(Nboson, LqTherm, LtrotTherm), intent(in) :: phi_therm
         class(SquareLattice), intent(in) :: Latt
         integer :: nt, ntt, nx, ny, ii, iit, nc
         integer :: n_list_therm(LqTherm, 1:2), inv_n_list_therm(NlxTherm, NlyTherm)
@@ -351,14 +351,14 @@ contains
         if (IRANK == 0) open(unit=35, file='confout.txt', status='unknown')
         if (IRANK .NE. 0) then
             call MPI_SEND(iseed, 1, MPI_Integer, 0, IRANK, MPI_COMM_WORLD, IERR)
-			call MPI_SEND(Conf%phi, Lq*Nspin*Ltrot, MPI_Real8, 0, IRANK+1024, MPI_COMM_WORLD, IERR)
+			call MPI_SEND(Conf%phi, Lq*Nboson*Ltrot, MPI_Real8, 0, IRANK+1024, MPI_COMM_WORLD, IERR)
             print '("Rank", i3.1, " after sending message. ")', IRANK
         endif
         if (IRANK == 0) then
             write(35,*) iseed
             do nt = 1, Ltrot
                 do ii = 1, Lq
-                    do ns = 1, Nspin
+                    do ns = 1, Nboson
                         write(35,*) Conf%phi(ns, ii, nt)
                     enddo
                 enddo
@@ -366,11 +366,11 @@ contains
             print '("Rank ", i3.1, " after writing down own auxfields. ")', IRANK
             do N = 1, ISIZE - 1
                 call MPI_RECV(iseed, 1, MPI_Integer, N, N, MPI_COMM_WORLD, STATUS, IERR)
-				call MPI_RECV(Conf%phi, Lq*Nspin*Ltrot, MPI_Real8, N, N+1024, MPI_COMM_WORLD, STATUS, IERR)
+				call MPI_RECV(Conf%phi, Lq*Nboson*Ltrot, MPI_Real8, N, N+1024, MPI_COMM_WORLD, STATUS, IERR)
                 write(35,*) iseed
                 do nt = 1, Ltrot
                     do ii = 1, Lq
-                        do ns = 1, Nspin
+                        do ns = 1, Nboson
                             write(35,*) Conf%phi(ns, ii, nt)
                         enddo
                     enddo

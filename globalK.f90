@@ -10,14 +10,14 @@ contains
         use MyMats
 ! Arguments:
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Gr
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new    
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new    
         integer, intent(in) :: ii, ntau
 ! Local: 
         integer :: P(Norb), nr, nl, no, sign, j
         complex(kind=8), dimension(Norb, Norb) :: Prod, Prodinv, Gr_local, mat_tmp
         complex(kind=8) :: Proddet
         complex(kind=8) :: Vhlp(2, Ndim), Uhlp(Ndim, 2), temp(Ndim, 2), Diff(Ndim, Ndim)
-        real(kind=8), dimension(Nspin) :: vec_new, vec_old, vec_tmp
+        real(kind=8), dimension(Nboson) :: vec_new, vec_old, vec_tmp
         real(kind=8) :: Xdif
         
         vec_new(:) = phi_new(:, ii, ntau)
@@ -74,7 +74,7 @@ contains
     subroutine GlobalK_prop_L(Prop, ratio_fermion, phi_new, nt) ! for shift & wolff flip
         class(Propagator), intent(inout) :: Prop
         real(kind=8), intent(inout) :: ratio_fermion
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new
         integer, intent(in) :: nt
         integer :: ii
         do ii = Lq, 1, -1
@@ -89,7 +89,7 @@ contains
     subroutine GlobalK_prop_R(Prop, ratio_fermion, phi_new, nt)
         class(Propagator), intent(inout) :: Prop
         real(kind=8), intent(inout) :: ratio_fermion
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi_new
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi_new
         integer, intent(in) :: nt
         integer :: ii
         call Op_K%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, 1)

@@ -6,13 +6,14 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: PI = acos(-1.d0)
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
-    integer,                parameter           :: Norb = 2 ! orbital (x\up) or (y\down) in a single sector; band index
+    integer,                parameter           :: Norb = 2 ! orbital x or y in; band index
+    integer,                parameter           :: Nspin = 2 ! fermion spin \up or \down
     integer,                parameter           :: Nsub = 2 ! sublattice; square lattice
     integer,                parameter           :: Nbond = 2 ! bonds per site; lattice direction
-    integer,                parameter           :: Nspin = 3 ! O(3) spin direction; 3-component boson field 
+    integer,                parameter           :: Nboson = 3 ! O(3) direction; 3-component boson field 
     integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
     integer,                public              :: Lq, LqTherm
-    integer,                public              :: Ndim
+    integer,                public              :: Ndim, Nsite
     real(kind=8),           public              :: Dtau
     real(kind=8),           public              :: Beta
     integer,                public              :: Ltrot, LtrotTherm
@@ -37,13 +38,13 @@ module CalcBasic ! Global parameters
     real(kind=8),           public              :: NB_field ! perpendicular flux quanta
     real(kind=8),           public              :: inconf ! Gaussian amplitude of initial bosonic fields
     integer,                public              :: absolute ! type of initial bosonic field configuration
-    real(kind=8),           public              :: init(Nspin) ! initial bosonic field balance position
+    real(kind=8),           public              :: init(Nboson) ! initial bosonic field balance position
 ! process control parameters
     logical,                public              :: is_tau ! whether to calculate time-sliced Green function
     integer,                public              :: Nthermal ! calculate time-sliced Green function from the (Nthermal + 1)-th bin
     logical,                public              :: is_warm ! bosonic warm-up switch
     integer,                public              :: Nwarm
-    real(kind=8),           public              :: valrt(Nspin)
+    real(kind=8),           public              :: valrt(Nboson)
     integer,                public              :: Nst
     integer,                public              :: Nwrap
     integer,                public              :: Nbin
@@ -75,10 +76,10 @@ contains
         call MPI_BCAST(mu1, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(mu2, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(valr0, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(valrs, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(valrt, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(valrs, Nboson, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(valrt, Nboson, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(inconf, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(init, Nspin, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        call MPI_BCAST(init, Nboson, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(NB_field, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nflavor, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(absolute, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
@@ -108,7 +109,8 @@ contains
         Lq = Nlx * Nly
         LqTherm = NlxTherm * NlyTherm
         Dtau = Beta / dble(Ltrot)
-        Ndim = Lq * Norb
+        Ndim = Lq * Norb * Nspin
+        Nsite = Lq * Norb
         Lfam = int(Lq / Nsub)
         if (mod(Ltrot, Nwrap) == 0) then
             Nst = Ltrot / Nwrap
@@ -139,10 +141,10 @@ contains
     
     pure function sqr_vec(vec)
         real(kind=8) :: sqr_vec
-        real(kind=8), dimension(Nspin), intent(in) :: vec
+        real(kind=8), dimension(Nboson), intent(in) :: vec
         integer :: ns
         sqr_vec = 0.d0
-        do ns = 1, Nspin
+        do ns = 1, Nboson
             sqr_vec = sqr_vec + vec(ns) * vec(ns)
         enddo
         return

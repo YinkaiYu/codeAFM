@@ -71,7 +71,7 @@ contains
 ! Local:
         real(kind=8), external :: ranf
         real(kind=8) :: theta, xflip, random, ratio, dif
-        real(kind=8), dimension(Nspin) :: vec_old, vec_new, vec_j
+        real(kind=8), dimension(Nboson) :: vec_old, vec_new, vec_j
         integer :: iit0, iit, jjt, ii, nti, jj, ntj, n, nf, eff_bond
 ! randomly choose the initial space-time site iit0 = (ii0, ntau0) of the cluster
         xflip = ranf(iseed)
@@ -135,9 +135,9 @@ contains
     
     pure function action_dif(vec_new, vec_old, vec_j, is_space)
         real(kind=8) :: action_dif
-        real(kind=8), dimension(Nspin), intent(in) :: vec_new, vec_old, vec_j
+        real(kind=8), dimension(Nboson), intent(in) :: vec_new, vec_old, vec_j
         logical, intent(in) :: is_space
-        real(kind=8), dimension(Nspin) :: vec_tmp
+        real(kind=8), dimension(Nboson) :: vec_tmp
         real(kind=8) :: action_new, action_old
 ! vec_new, vec_old for the marked site iit; vec_j for the unmarked site jjt
         if (is_space) then ! space-adjacent sites
@@ -158,8 +158,8 @@ contains
     end function action_dif
     
     pure function spin_reflect(vec, theta)
-        real(kind=8), dimension(Nspin) :: spin_reflect
-        real(kind=8), dimension(Nspin), intent(in) :: vec
+        real(kind=8), dimension(Nboson) :: spin_reflect
+        real(kind=8), dimension(Nboson), intent(in) :: vec
         real(kind=8), intent(in) :: theta
         real(kind=8) :: inner_prod
         inner_prod = vec(1)*cos(theta) + vec(2)*sin(theta)
@@ -170,7 +170,7 @@ contains
     
     subroutine Global_init(this)
         class(GlobalUpdate), intent(inout) :: this
-        allocate(phi_new(Nspin, Lq, Ltrot))
+        allocate(phi_new(Nboson, Lq, Ltrot))
         phi_new = 0.d0
         allocate(this%prop)
         call this%prop%make()
@@ -213,7 +213,7 @@ contains
         
         call Wolff%reset()
         call Wolff%flip(iseed, size_cluster) ! update phi_new and size_cluster
-        do ns = 1, Nspin
+        do ns = 1, Nboson
             xflip = ranf(iseed)
             X = dble( (xflip - 0.5) * abs(valrs(ns)) )
             phi_new(ns, 1:Lq, 1:Ltrot) = phi_new(ns, 1:Lq, 1:Ltrot) + X

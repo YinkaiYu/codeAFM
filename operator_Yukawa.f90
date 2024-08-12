@@ -27,7 +27,7 @@ contains
     subroutine opK_get_exp(this, vec, nflag)
         class(OperatorPhonon), intent(inout) :: this
         integer, intent(in) :: nflag ! +1 or -1; propagating direction
-        real(kind=8), dimension(Nspin), intent(in) :: vec ! two-component order parameter with space-time coordinate (ii, ntau)
+        real(kind=8), dimension(Nboson), intent(in) :: vec ! two-component order parameter with space-time coordinate (ii, ntau)
         real(kind=8) :: magnitude
         magnitude = sqrt(sqr_vec(vec))
         this%entryC = cosh( nflag * this%alpha * magnitude )
@@ -37,7 +37,7 @@ contains
     
     subroutine opK_get_delta(this, vec_old, vec_new, sign)
         class(OperatorPhonon), intent(inout) :: this
-        real(kind=8), dimension(Nspin), intent(in) :: vec_old, vec_new
+        real(kind=8), dimension(Nboson), intent(in) :: vec_old, vec_new
         integer, intent(in) :: sign ! = \pm 1
         real(kind=8) :: C_new, C_old, mag_new, mag_old
         complex(kind=8) :: S_new, S_old
@@ -61,11 +61,11 @@ contains
         class(OperatorPhonon), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
         class(SquareLattice), intent(in) :: Latt
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
         integer :: P(Norb), ii, no, j, sign
-        real(kind=8), dimension(Nspin) :: vec
+        real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(2, Ndim) :: Vhlp
 
         do ii = 1, Lq
@@ -95,11 +95,11 @@ contains
         class(OperatorPhonon), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
         class(SquareLattice), intent(in) :: Latt
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
         integer :: P(Norb), j, ii, no, sign
-        real(kind=8), dimension(Nspin) :: vec
+        real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(Ndim, 2) :: Uhlp
 
         do ii = 1, Lq

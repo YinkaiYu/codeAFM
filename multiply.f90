@@ -6,7 +6,7 @@ module Multiply_mod
 contains
     subroutine propK_pre(Prop, phi, nt)
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
         call Op_K%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
@@ -14,7 +14,7 @@ contains
     
     subroutine propK_L(Prop, phi, nt)
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
         call Op_K%mmult_L(Prop%Gr, Latt, phi, nt, 1)
         call Op_K%mmult_R(Prop%Gr, Latt, phi, nt, -1)
@@ -24,7 +24,7 @@ contains
     
     subroutine propK_R(Prop, phi, nt)
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
         call Op_K%mmult_R(Prop%Gr, Latt, phi, nt, 1)
         call Op_K%mmult_L(Prop%Gr, Latt, phi, nt, -1)
@@ -35,7 +35,7 @@ contains
     subroutine propgrK_R(Prop, Propgr, phi, nt)
         class(Propagator), intent(inout) :: Prop
         class(PropGreen), intent(inout) :: Propgr
-        real(kind=8), dimension(Nspin, Lq, Ltrot), intent(in) :: phi
+        real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
         call Op_K%mmult_R(Propgr%Grt0, Latt, phi, nt, 1)
         call Op_K%mmult_L(Propgr%Gr0t, Latt, phi, nt, -1)
