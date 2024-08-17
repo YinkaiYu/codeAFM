@@ -131,10 +131,13 @@ contains
             do ix = 1, Nlx
                 ii = Latt%inv_n_list(ix, iy)
                 Latt%L_bonds(ii, 0) = ii
-                Latt%L_bonds(ii, 1) = Latt%inv_n_list( npbc(ix+1, Nlx), iy )
-                Latt%L_bonds(ii, 2) = Latt%inv_n_list( ix, npbc(iy+1, Nly) )
-                Latt%L_bonds(ii, 3) = Latt%inv_n_list( npbc(ix-1, Nlx), iy )
-                Latt%L_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy-1, Nly) )
+                Latt%L_bonds(ii, 1) = Latt%inv_n_list( npbc(ix+1, Nlx), iy ) ! 水平方向近邻
+                Latt%L_bonds(ii, 2) = Latt%inv_n_list( ix, npbc(iy+1, Nly) ) ! 垂直方向近邻
+                ! 这里进行了修改，将nf为3，4改为次近邻
+                Latt%L_bonds(ii, 3) = Latt%inv_n_list( npbc(ix+2, Nlx), iy ) ! 水平方向次近邻
+                Latt%L_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy+2, Nly) ) ! 垂直方向次近邻
+                ! Latt%L_bonds(ii, 3) = Latt%inv_n_list( npbc(ix-1, Nlx), iy )
+                ! Latt%L_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy-1, Nly) )
             enddo
         enddo
 ! define the second nearest neighbor bonds
