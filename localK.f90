@@ -29,6 +29,7 @@ contains
     end subroutine LocalK_reset
     
     subroutine LocalK_metro(Gr, iseed, ii, ntau)
+        ! 计算用于更新的ratio
         use MyMats
 ! Arguments:
 	    complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Gr
@@ -71,14 +72,18 @@ contains
                 Prod(nl, nr) = ZKRON(nl, nr) + mat_tmp(nl, nr)
             enddo
         enddo
+        ! 手动计算行列式
         Proddet = Prod(1,1) * Prod(2,2) - Prod(1,2) * Prod(2,1)
+        ! 费米子部分的ratio，已经进行了平方
         ratio_fermion = real(Proddet * dconjg(Proddet))
 ! Calculate total Metropolis ratio     
         ratio_boson = NsigL_K%bosonratio(phi_new, ii, ntau, Latt)
         ratio_re = dble(ratio_fermion * ratio_boson)
+        ! 防止符号问题
         ratio_re_abs = abs(ratio_re)
         random = ranf(iseed)
 ! Upgrade Green's function
+        ! 接受更新
         if (ratio_re_abs .gt. random) then
             call Acc_Kl%count(.true.)
             Prodinv(1,1) = Prod(2,2)

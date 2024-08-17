@@ -30,7 +30,9 @@ contains
     end subroutine opT_clear
     
     subroutine def_hamT(HamT, Latt)
+        ! 构造包含磁通量量子的动量哈密顿量矩阵
 ! Arguments: 
+        ! Ndim = Lq * Norb * Nspin 为矩阵总维度
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: HamT
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
@@ -39,17 +41,17 @@ contains
         
         HamT = dcmplx(0.d0, 0.d0)
 !  nearest bond hopping
-        do no = 1, Norb
-            do ii = 1, Lq
+        do no = 1, Norb ! no控制轨道(味道)
+            do ii = 1, Lq ! 遍历所有格点
                 i_0 = Latt%inv_o_list(Latt%L_Bonds(ii, 0), no)
                 ix = Latt%n_list(ii, 1)
                 iy = Latt%n_list(ii, 2)
-                do nf = 1, Nbond
+                do nf = 1, Nbond ! nf控制垂直还是水平的RT
                     i_n = Latt%inv_o_list(Latt%L_Bonds(ii, nf), no)
-                    if (nf == 1) then
+                    if (nf == 1) then !  i_0的右边一个（水平）
                         Z = dcmplx( - RT(no, nf), 0.d0) * &
                             &   exp(- dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq)) ! adding one flux quanta(NB_field=1) on finite lattice under Landau gauge A=(-By,0,0)
-                    elseif (nf == 2) then
+                    elseif (nf == 2) then ! i_0的上边一个（垂直）
                         if (iy .NE. Nly) then
                             Z = dcmplx( - RT(no, nf), 0.d0)
                         else
@@ -59,11 +61,13 @@ contains
                     else 
                         write(6,*) "incorrect nearest neighbor", Nbond, nf; stop
                     endif
+                    ! 添加到矩阵中
                     HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
                     HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
                 enddo
             enddo
         enddo
+        ! 化学势
         do no = 1, Norb
             do ii = 1, Lq
                 i = Latt%inv_o_list(ii, no)
@@ -74,6 +78,7 @@ contains
     end subroutine def_hamT
 
     subroutine opT_set(this, Latt)
+        ! 根据动能哈密顿量计算exp(-Dtau*T)和exp(Dtau*T)
         use MyMats
 ! Arguments: 
         class(OperatorKinetic), intent(inout) :: this
@@ -101,7 +106,9 @@ contains
                 temp2(nl, nr) = Hlp1(nl, nr) * dmat2(nr)
             enddo
         enddo
+        ! 将temp1和Hlp1dag相乘得到expT_P
         call mmult(this%expT_P, temp1, Hlp1dag) ! output
+        ! 将temp2和Hlp1dag相乘得到expT_M
         call mmult(this%expT_M, temp2, Hlp1dag) ! output
         return
     end subroutine opT_set
