@@ -38,7 +38,7 @@ contains
             enddo
         enddo
         
-        allocate(Latt%o_list(Nsite, 1:2), Latt%inv_o_list(Lq, Norb))
+        allocate(Latt%o_list(Ndim, 1:2), Latt%inv_o_list(Lq, Norb))
         nc = 0
         do no = 1, Norb ! no is the orbital index
             do n = 1, Lq

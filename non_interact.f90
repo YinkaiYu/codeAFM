@@ -44,60 +44,64 @@ contains
 !  nearest bond hopping
         do no = 1, Norb ! no控制轨道(味道)
             do ii = 1, Lq ! 遍历所有格点
-                i_0 = Latt%inv_o_list(Latt%L_Bonds(ii, 0), no)
-                ix = Latt%n_list(ii, 1)
-                iy = Latt%n_list(ii, 2)
-                if (no == 1) then ! 味道为x
-                    i_n = Latt%inv_o_list(Latt%L_Bonds(ii, 1), no) ! 右边一个（水平）
-                    Z = dcmplx( - RT(no, 1), 0.d0) * &
-                        &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
-                    ! 添加到矩阵中
-                    HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
-                    HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
+                do ns = 1, Nspin ! 遍历所有轨道
+                    i_0 = Latt%inv_dim_list(Latt%L_Bonds(ii, 0), no, ns)
+                    ix = Latt%n_list(ii, 1)
+                    iy = Latt%n_list(ii, 2)
+                    if (no == 1) then ! 味道为x
+                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 1), no, ns) ! 右边一个（水平）
+                        Z = dcmplx( - RT(no, 1), 0.d0) * &
+                            &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
+                        ! 添加到矩阵中
+                        HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
+                        HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
 
-                    i_n = Latt%inv_o_list(Latt%L_Bonds(ii, 4), no) ! 上边两个（垂直）
-                    if (iy .NE. Nly) then
-                        Z = dcmplx( - RT(no, 2), 0.d0)
-                    else
-                        Z = dcmplx( - RT(no, 2), 0.d0) * &
-                            &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
+                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 4), no, ns) ! 上边两个（垂直）
+                        if (iy .NE. Nly) then
+                            Z = dcmplx( - RT(no, 2), 0.d0)
+                        else
+                            Z = dcmplx( - RT(no, 2), 0.d0) * &
+                                &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
+                        endif
+                        ! 添加到矩阵中
+                        HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
+                        HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
+
+                    elseif (no == 2) then ! 味道为y
+                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 3), no, ns) ! 右边两个（水平）
+                        Z = dcmplx( - RT(no, 1), 0.d0) * &
+                            &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
+                        ! 添加到矩阵中
+                        HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
+                        HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
+
+                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 2), no, ns) ! 上边一个（垂直）
+                        if (iy .NE. Nly) then
+                            Z = dcmplx( - RT(no, 2), 0.d0)
+                        else
+                            Z = dcmplx( - RT(no, 2), 0.d0) * &
+                                &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
+                        endif
+                        ! 添加到矩阵中
+                        HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
+                        HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
+                    else 
+                        write(6,*) "incorrect nearest neighbor", Nbond, nf; stop
                     endif
-                    ! 添加到矩阵中
-                    HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
-                    HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
-
-                elseif (no == 2) then ! 味道为y
-                    i_n = Latt%inv_o_list(Latt%L_Bonds(ii, 3), no) ! 右边两个（水平）
-                    Z = dcmplx( - RT(no, 1), 0.d0) * &
-                        &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
-                    ! 添加到矩阵中
-                    HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
-                    HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
-
-                    i_n = Latt%inv_o_list(Latt%L_Bonds(ii, 2), no) ! 上边一个（垂直）
-                    if (iy .NE. Nly) then
-                        Z = dcmplx( - RT(no, 2), 0.d0)
-                    else
-                        Z = dcmplx( - RT(no, 2), 0.d0) * &
-                            &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
-                    endif
-                    ! 添加到矩阵中
-                    HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
-                    HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
-                else 
-                    write(6,*) "incorrect nearest neighbor", Nbond, nf; stop
-                endif
+                enddo
             enddo
         enddo
         ! 化学势
         do no = 1, Norb
             do ii = 1, Lq
-                i = Latt%inv_o_list(ii, no)
-                if (no == 1) then ! 味道为x
-                    HamT(i, i) = HamT(i, i) - dcmplx(mu1, 0.d0)
-                else if (no == 2) then ! 味道为y
-                    HamT(i, i) = HamT(i, i) - dcmplx(mu2, 0.d0)
-                endif
+                do ns = 1, Nspin
+                    i = Latt%inv_dim_list(ii, no, ns)
+                    if (no == 1) then ! 味道为x
+                        HamT(i, i) = HamT(i, i) - dcmplx(mu1, 0.d0)
+                    else if (no == 2) then ! 味道为y
+                        HamT(i, i) = HamT(i, i) - dcmplx(mu2, 0.d0)    
+                    endif
+                enddo
             enddo
         enddo
         return
