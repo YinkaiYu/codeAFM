@@ -90,18 +90,18 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb + 2), ii, no, j, sign ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), ii, no, j, sign ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
-        complex(kind=8), dimension(2 + 2, Ndim) :: Vhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
+        complex(kind=8), dimension(Norb * Nspin, Ndim) :: Vhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
         do ii = 1, Lq
             vec(:) = phi(:, ii, ntau)
             call this%get_exp(vec, nflag) ! output entryC and entryS 和 entryA
             if (Latt%b_list(ii, 2) == 1) sign = 1
             if (Latt%b_list(ii, 2) == 2) sign = -1
-            do no = 1, Norb
+            do no = 1, Norb * Nspin
+                ! 计算P，用于遍历不同自旋的轨道
                 P(no) = Latt%inv_o_list(ii, no)
-                P(no+2) = Latt%inv_o_list(ii, no) + 2 * Lq ! 新加的P，用于遍历不同自旋的轨道
             enddo
             Vhlp = dcmplx(0.d0, 0.d0)
             ! 计算MAT中不同行的结果（左乘了矩阵exp(-alpha*V)）
@@ -131,18 +131,18 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb + 2), j, ii, no, sign ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), j, ii, no, sign ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
-        complex(kind=8), dimension(Ndim, 2 + 2) :: Uhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
+        complex(kind=8), dimension(Ndim, Norb * Nspin) :: Uhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
         do ii = 1, Lq
             vec(:) = phi(:, ii, ntau)
             call this%get_exp(vec, nflag) ! output entryC and entryS 和 entryA
             if (Latt%b_list(ii, 2) == 1) sign = 1
             if (Latt%b_list(ii, 2) == 2) sign = -1
-            do no = 1, Norb
+            do no = 1, Norb * Nspin
+                ! 计算P，用于遍历不同自旋的轨道
                 P(no) = Latt%inv_o_list(ii, no)
-                P(no+2) = Latt%inv_o_list(ii, no) + 2 * Lq ! 新加的P，用于遍历不同自旋的轨道
             enddo
             Uhlp = dcmplx(0.d0, 0.d0)
             do j = 1, Ndim

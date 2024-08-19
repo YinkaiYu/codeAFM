@@ -21,7 +21,7 @@ module MyLattice ! definition on space geometry
 contains
     subroutine Lattice_make(Latt)
         class(SquareLattice), intent(inout) :: Latt
-        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny, ns
+        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny, ns, nn
         integer :: n1, n2, ndix, ii, jj, ix, jx, iy, jy, nt, iit, imjx, imjy
         
         allocate(Latt%dim_list(Ndim, 1:2), Latt%inv_dim_list(Lq, Norb))
@@ -38,16 +38,26 @@ contains
             enddo
         enddo
         
-        allocate(Latt%o_list(Nsite, 1:2), Latt%inv_o_list(Lq, Norb))
+        allocate(Latt%o_list(Nsite, 1:3), Latt%inv_o_list(Lq, Norb * Nspin)) ! 新增加了两个维度，用于遍历自旋
         nc = 0
-        do no = 1, Norb ! no is the orbital index
-            do n = 1, Lq
-                nc = nc + 1
-                Latt%o_list(nc, 1) = n
-                Latt%o_list(nc, 2) = no
-                Latt%inv_o_list(n, no) = nc
+        nn = 1
+        do ns = 1, Nspin ! ns is the spin index
+            do no = 1, Norb ! no is the orbital index
+                do n = 1, Lq
+                    nc = nc + 1
+                    Latt%o_list(nc, 1) = n
+                    Latt%o_list(nc, 2) = no
+                    ! 新加的维度，用于记录自旋
+                    if (ns == 1) then
+                        Latt%o_list(nc, 3) = no
+                    elseif (ns == 2) then
+                        Latt%o_list(nc, 3) = no - ns + 1
+                    endif
+                    Latt%inv_o_list(n, nn) = nc
+                enddo
+                nn = nn + 1
             enddo
-        enddo
+        end do
 
         allocate(Latt%n_list(Lq, 1:2), Latt%inv_n_list(Nlx, Nly))
         nc = 0
