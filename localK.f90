@@ -42,7 +42,7 @@ contains
         complex(kind=8) :: Vhlp(2, Ndim), Uhlp(Ndim, 2), temp(Ndim, 2), Diff(Ndim, Ndim)
         real(kind=8) :: ratio_fermion, ratio_boson, ratio_re, ratio_re_abs
         real(kind=8) :: random, Xdif, xflip
-        integer :: ns, P(Norb), j, no, sign, nl, nr
+        integer :: ns, P(Norb), j, no, sign, nl, nr, nn
         real(kind=8), dimension(Nboson) :: vec_new, vec_old
 
 ! Local update on a two-component spin vector on space-time (ii, ntau)
@@ -53,22 +53,27 @@ contains
         enddo
         vec_new(:) = phi_new(:, ii, ntau)
         vec_old(:) = NsigL_K%phi(:, ii, ntau)
-        do no = 1, Norb
-            P(no) = Latt%inv_o_list(ii, no)
+        ! 计算P数组，用于计算Gr_local
+        nn = 0
+        do ns = 1, Nspin
+            do no = 1, Norb
+                nn = nn + 1
+                P(nn) = Latt%inv_dim_list(ii, no, ns)
+            enddo
         enddo
         if (Latt%b_list(ii, 2) == 1) sign = 1
         if (Latt%b_list(ii, 2) == 2) sign = -1
 ! Calculate fermionic Metropolis ratio within 2*2 matrix space
         call Op_K%get_delta(vec_old, vec_new, sign) ! update Delta matrix in Op_K
         Prod = dcmplx(0.d0, 0.d0)
-        do nr = 1, Norb
-            do nl = 1, Norb
+        do nr = 1, Norb * Nspin
+            do nl = 1, Norb * Nspin
                 Gr_local(nl, nr) = ZKRON(nl, nr) - Gr(P(nl), P(nr))
             enddo
         enddo
-        call mmult(mat_tmp, Op_K%Delta, Gr_local) ! 2*2 matrix multiplication
-        do nr = 1, Norb
-            do nl = 1, Norb
+        call mmult(mat_tmp, Op_K%Delta, Gr_local) ! 4*4 matrix multiplication
+        do nr = 1, Norb * Nspin
+            do nl = 1, Norb * Nspin
                 Prod(nl, nr) = ZKRON(nl, nr) + mat_tmp(nl, nr)
             enddo
         enddo

@@ -58,21 +58,21 @@ contains
         S_old = sinh( -this%alpha * mag_old ) * dcmplx(- vec_old(1), vec_old(2)) / mag_old
         A_old = sinh( -this%alpha * mag_old ) * vec_old(3) / mag_old
         this%Delta(1,1) = C_new * C_old + S_new * dconjg(S_old) + A_new * A_old - 1.d0
-        this%Delta(1,2) = (C_new * S_old + S_new * C_old ) * dble(sign)
+        this%Delta(1,4) = (C_new * S_old + S_new * C_old ) * dble(sign)
         this%Delta(1,3) = S_new * A_old - A_new * S_old
-        this%Delta(1,4) = (- C_new * A_old - A_new * C_old ) * dble(sign)
-        this%Delta(2,1) = (dconjg(S_new) * C_old + C_new * dconjg(S_old) ) * dble(sign)
-        this%Delta(2,2) = dconjg(S_new) * S_old + C_new * C_old + A_new * A_old - 1.d0
-        this%Delta(2,3) = (A_new * C_old + C_new * A_old) * dble(sign)
-        this%Delta(2,4) = - dconjg(S_new) * A_old + A_new * dconjg(S_old)
+        this%Delta(1,2) = (- C_new * A_old - A_new * C_old ) * dble(sign)
+        this%Delta(4,1) = (dconjg(S_new) * C_old + C_new * dconjg(S_old) ) * dble(sign)
+        this%Delta(4,4) = dconjg(S_new) * S_old + C_new * C_old + A_new * A_old - 1.d0
+        this%Delta(4,3) = (A_new * C_old + C_new * A_old) * dble(sign)
+        this%Delta(4,2) = - dconjg(S_new) * A_old + A_new * dconjg(S_old)
         this%Delta(3,1) = - dconjg(S_new) * A_old + A_new * dconjg(S_old)
-        this%Delta(3,2) = (C_new * A_old + A_new * C_old) * dble(sign)
+        this%Delta(3,4) = (C_new * A_old + A_new * C_old) * dble(sign)
         this%Delta(3,3) = A_new * A_old + C_new * C_old + dconjg(S_new) * S_old - 1.d0
-        this%Delta(3,4) = (C_new * dconjg(S_old) + dconjg(S_new) * C_old ) * dble(sign)
-        this%Delta(4,1) = (- A_new * C_old - C_new * A_old ) * dble(sign)
-        this%Delta(4,2) = - A_new * S_old + S_new * A_old
-        this%Delta(4,3) = (S_new * C_old + C_new * S_old) * dble(sign)
-        this%Delta(4,4) = A_new * A_old + S_new * dconjg(S_old) + C_new * C_old - 1.d0
+        this%Delta(3,2) = (C_new * dconjg(S_old) + dconjg(S_new) * C_old ) * dble(sign)
+        this%Delta(2,1) = (- A_new * C_old - C_new * A_old ) * dble(sign)
+        this%Delta(2,4) = - A_new * S_old + S_new * A_old
+        this%Delta(2,3) = (S_new * C_old + C_new * S_old) * dble(sign)
+        this%Delta(2,2) = A_new * A_old + S_new * dconjg(S_old) + C_new * C_old - 1.d0
         ! this%Delta(1,1) = C_new * C_old + S_new * dconjg(S_old) - 1.d0
         ! this%Delta(1,2) = (C_new * S_old + S_new * C_old) * dble(sign)
         ! this%Delta(2,1) = (C_new * dconjg(S_old) + dconjg(S_new) * C_old) * dble(sign)
@@ -90,7 +90,7 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb * Nspin), ii, no, j, sign ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), ii, no, j, sign, nn ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(Norb * Nspin, Ndim) :: Vhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
@@ -99,10 +99,14 @@ contains
             call this%get_exp(vec, nflag) ! output entryC and entryS 和 entryA
             if (Latt%b_list(ii, 2) == 1) sign = 1
             if (Latt%b_list(ii, 2) == 2) sign = -1
-            do no = 1, Norb * Nspin
-                ! 计算P，用于遍历不同自旋的轨道
-                P(no) = Latt%inv_o_list(ii, no)
+            nn = 0
+            do ns = 1, Nspin
+                do no = 1, Norb
+                    nn = nn + 1
+                    P(nn) = Latt%inv_dim_list(ii, no, ns)
+                enddo
             enddo
+
             Vhlp = dcmplx(0.d0, 0.d0)
             ! 计算MAT中不同行的结果（左乘了矩阵exp(-alpha*V)）
             do j = 1, Ndim
@@ -131,7 +135,7 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb * Nspin), j, ii, no, sign ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), j, ii, no, sign, nn ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(Ndim, Norb * Nspin) :: Uhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
@@ -140,10 +144,14 @@ contains
             call this%get_exp(vec, nflag) ! output entryC and entryS 和 entryA
             if (Latt%b_list(ii, 2) == 1) sign = 1
             if (Latt%b_list(ii, 2) == 2) sign = -1
-            do no = 1, Norb * Nspin
-                ! 计算P，用于遍历不同自旋的轨道
-                P(no) = Latt%inv_o_list(ii, no)
+            nn = 0
+            do ns = 1, Nspin
+                do no = 1, Norb
+                    nn = nn + 1
+                    P(nn) = Latt%dim_list(ii, no, ns)
+                enddo
             enddo
+
             Uhlp = dcmplx(0.d0, 0.d0)
             do j = 1, Ndim
                 Uhlp(j, 1) = Mat(j, P(1)) * this%entryC + sign * Mat(j, P(2)) * dconjg(this%entryS) - sign * Mat(j, P(4)) * this%entryA
