@@ -111,8 +111,8 @@ contains
         do jj = 1, Lq
             do ii = 1, Lq
                 imj = Latt%imj(ii, jj)
-                ip = Latt%L_bonds(ii, 1)
-                jp = Latt%L_bonds(jj, 1)
+                ip = Latt%n_Bonds(ii, 1)
+                jp = Latt%n_Bonds(jj, 1)
                 i1 = Latt%inv_o_list(ii, 1)
                 ip1 = Latt%inv_o_list(ip, 1)
                 i2 = Latt%inv_o_list(ii, 2)

@@ -44,38 +44,38 @@ contains
 !  nearest bond hopping
         do no = 1, Norb ! no控制轨道(味道)
             do ii = 1, Lq ! 遍历所有格点
-                do ns = 1, Nspin ! 遍历所有轨道
-                    i_0 = Latt%inv_dim_list(Latt%L_Bonds(ii, 0), no, ns)
+                do ns = 1, Nspin ! 遍历所有自旋
+                    i_0 = Latt%inv_dim_list(Latt%n_Bonds(ii, 0), no, ns)
                     ix = Latt%n_list(ii, 1)
                     iy = Latt%n_list(ii, 2)
                     if (no == 1) then ! 味道为x
-                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 1), no, ns) ! 右边一个（水平）
+                        i_n = Latt%inv_dim_list(Latt%n_Bonds(ii, 1), no, ns) ! 右边一个（水平）
                         Z = dcmplx( - RT(no, 1), 0.d0) * &
                             &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
                         ! 添加到矩阵中
                         HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
                         HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
 
-                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 4), no, ns) ! 上边两个（垂直）
+                        i_n = Latt%inv_dim_list(Latt%nn_Bonds(ii, 2), no, ns) ! 上边两个（垂直）
                         if (iy .NE. Nly) then
                             Z = dcmplx( - RT(no, 2), 0.d0)
                         else
                             Z = dcmplx( - RT(no, 2), 0.d0) * &
-                                &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
+                                &   exp( dcmplx(0.d0, 1.d0) * 4.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
                         endif
                         ! 添加到矩阵中
                         HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
                         HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
 
                     elseif (no == 2) then ! 味道为y
-                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 3), no, ns) ! 右边两个（水平）
+                        i_n = Latt%inv_dim_list(Latt%nn_Bonds(ii, 1), no, ns) ! 右边两个（水平）
                         Z = dcmplx( - RT(no, 1), 0.d0) * &
-                            &   exp( - dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
+                            &   exp( - dcmplx(0.d0, 1.d0) * 4.d0 * Pi * NB_field * dble(iy)/dble(Lq) )
                         ! 添加到矩阵中
                         HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
                         HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
 
-                        i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, 2), no, ns) ! 上边一个（垂直）
+                        i_n = Latt%inv_dim_list(Latt%n_Bonds(ii, 2), no, ns) ! 上边一个（垂直）
                         if (iy .NE. Nly) then
                             Z = dcmplx( - RT(no, 2), 0.d0)
                         else

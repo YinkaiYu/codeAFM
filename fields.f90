@@ -55,7 +55,7 @@ contains
 ! boson-boson interactions
         new2 = 0.d0; old2 = 0.d0
         do nf = 1, 2*Nbond
-            jj = Latt%L_bonds(ii, nf)
+            jj = Latt%n_Bonds(ii, nf)
             vec1(:) = phi_new(:, ii, ntau) - this%phi(:, jj, ntau)
             new2 = new2 + sqr_vec(vec1)
             vec2(:) = this%phi(:, ii, ntau) - this%phi(:, jj, ntau)
@@ -100,7 +100,7 @@ contains
 !            old1 = old1 + sqr_vec(vec)
 ! boson-boson interactions
 !            do nf = 1, 2*Nbond
-!                jj = Latt%L_bonds(ii, nf)
+!                jj = Latt%n_Bonds(ii, nf)
 !                vec(:) = phi_new(:, ii, nt) - this%phi(:, jj, nt)
 !                new2 = new2 + sqr_vec(vec)
 !                vec(:) = this%phi(:, ii, nt) - this%phi(:, jj, nt)

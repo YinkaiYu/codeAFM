@@ -5,7 +5,7 @@ module MyLattice ! definition on space geometry
     type, public :: SquareLattice
         integer, dimension(:,:,:), allocatable :: inv_dim_list, 
         integer, dimension(:,:), allocatable :: dim_list, o_list, inv_o_list, n_list, inv_n_list, b_list, inv_b_list, t_list, inv_t_list
-        integer, dimension(:,:), allocatable :: L_bonds, nn_bonds, LT_bonds, imj
+        integer, dimension(:,:), allocatable :: n_Bonds, nn_bonds, LT_bonds, imj
         real(kind=8), dimension(:,:), allocatable :: xk_v, aimj_v, k_dot_r
         real(kind=8) :: a1_v(2), a2_v(2), b1_v(2), b2_v(2)
     contains
@@ -125,30 +125,27 @@ contains
             ZKRON(i, i) = dcmplx(1.d0, 0.d0)
         enddo !define delta function
 
-        allocate(Latt%L_Bonds(Lq, 0:4), Latt%nn_bonds(Lq, 0:4), Latt%LT_bonds(Lq*Ltrot, 0:6))
+        allocate(Latt%n_Bonds(Lq, 0:4), Latt%nn_bonds(Lq, 0:4), Latt%LT_bonds(Lq*Ltrot, 0:6))
 !define the nearest neighbor bonds
         do iy = 1, Nly
             do ix = 1, Nlx
                 ii = Latt%inv_n_list(ix, iy)
-                Latt%L_bonds(ii, 0) = ii
-                Latt%L_bonds(ii, 1) = Latt%inv_n_list( npbc(ix+1, Nlx), iy ) ! 水平方向近邻
-                Latt%L_bonds(ii, 2) = Latt%inv_n_list( ix, npbc(iy+1, Nly) ) ! 垂直方向近邻
-                ! 这里进行了修改，将nf为3，4改为次近邻
-                Latt%L_bonds(ii, 3) = Latt%inv_n_list( npbc(ix+2, Nlx), iy ) ! 水平方向次近邻
-                Latt%L_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy+2, Nly) ) ! 垂直方向次近邻
-                ! Latt%L_bonds(ii, 3) = Latt%inv_n_list( npbc(ix-1, Nlx), iy )
-                ! Latt%L_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy-1, Nly) )
+                Latt%n_Bonds(ii, 0) = ii
+                Latt%n_Bonds(ii, 1) = Latt%inv_n_list( npbc(ix+1, Nlx), iy )
+                Latt%n_Bonds(ii, 2) = Latt%inv_n_list( ix, npbc(iy+1, Nly) )
+                Latt%n_Bonds(ii, 3) = Latt%inv_n_list( npbc(ix-1, Nlx), iy )
+                Latt%n_Bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy-1, Nly) )
             enddo
         enddo
-! define the second nearest neighbor bonds
+! define the second nearest neighbor bonds ! 沿着x或者y方向的次近邻 (而非对角方向的真正次近邻)
         do iy = 1, Nly
             do ix = 1, Nlx
                 ii = Latt%inv_n_list(ix, iy)
                 Latt%nn_bonds(ii, 0) = ii
-                Latt%nn_bonds(ii, 1) = Latt%inv_n_list( npbc(ix+1, Nlx), npbc(iy+1, Nly) )
-                Latt%nn_bonds(ii, 2) = Latt%inv_n_list( npbc(ix-1, Nlx), npbc(iy+1, Nly) )
-                Latt%nn_bonds(ii, 3) = Latt%inv_n_list( npbc(ix-1, Nlx), npbc(iy-1, Nly) )
-                Latt%nn_bonds(ii, 4) = Latt%inv_n_list( npbc(ix+1, Nlx), npbc(iy-1, Nly) )
+                Latt%nn_bonds(ii, 1) = Latt%inv_n_list( npbc(ix+2, Nlx), iy )
+                Latt%nn_bonds(ii, 2) = Latt%inv_n_list( ix, npbc(iy+2, Nly) )
+                Latt%nn_bonds(ii, 3) = Latt%inv_n_list( npbc(ix-2, Nlx), iy )
+                Latt%nn_bonds(ii, 4) = Latt%inv_n_list( ix, npbc(iy-2, Nly) )
             enddo
         enddo
 ! define the nearest neighbors on space-time
@@ -156,10 +153,10 @@ contains
             do ii = 1, Lq
                 iit = Latt%inv_t_list(ii, nt)
                 Latt%LT_bonds(iit, 0) = iit
-                Latt%LT_bonds(iit, 1) = Latt%inv_t_list(Latt%L_bonds(ii, 1), nt)
-                Latt%LT_bonds(iit, 2) = Latt%inv_t_list(Latt%L_bonds(ii, 2), nt)
-                Latt%LT_bonds(iit, 3) = Latt%inv_t_list(Latt%L_bonds(ii, 3), nt)
-                Latt%LT_bonds(iit, 4) = Latt%inv_t_list(Latt%L_bonds(ii, 4), nt)
+                Latt%LT_bonds(iit, 1) = Latt%inv_t_list(Latt%n_Bonds(ii, 1), nt)
+                Latt%LT_bonds(iit, 2) = Latt%inv_t_list(Latt%n_Bonds(ii, 2), nt)
+                Latt%LT_bonds(iit, 3) = Latt%inv_t_list(Latt%n_Bonds(ii, 3), nt)
+                Latt%LT_bonds(iit, 4) = Latt%inv_t_list(Latt%n_Bonds(ii, 4), nt)
                 Latt%LT_bonds(iit, 5) = Latt%inv_t_list(ii, npbc(nt+1, Ltrot))
                 Latt%LT_bonds(iit, 6) = Latt%inv_t_list(ii, npbc(nt-1, Ltrot))
             enddo
@@ -171,7 +168,7 @@ contains
         type(SquareLattice), intent(inout) :: this
         deallocate(this%dim_list, this%inv_dim_list)
         deallocate(this%o_list, this%inv_o_list, this%n_list, this%inv_n_list, this%b_list, this%inv_b_list, this%t_list, this%inv_t_list)
-        deallocate(this%L_bonds, this%nn_bonds, this%LT_bonds, this%imj)
+        deallocate(this%n_Bonds, this%nn_bonds, this%LT_bonds, this%imj)
         deallocate(this%xk_v, this%aimj_v, this%k_dot_r)
         deallocate(ZKRON)
         return

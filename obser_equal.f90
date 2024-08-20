@@ -89,7 +89,7 @@ contains
             this%den_occ(ii) = this%den_occ(ii) + tmpd(i)
             this%density = this%density + tmpd(i) / dble(Lq)
             do nf = 1, Nbond
-                i1 = Latt%inv_o_list(Latt%L_bonds(ii, nf), no)
+                i1 = Latt%inv_o_list(Latt%n_Bonds(ii, nf), no)
                 tmp = real(Grupc(i, i1) + Grupc(i1, i) + dconjg(Grupc(i, i1) + Grupc(i1, i)))
                 this%bond_occ(ii, nf) = this%bond_occ(ii, nf) + tmp
                 this%el_ke(nf) = this%el_ke(nf) - RT(no, nf) * tmp / dble(Lq)
