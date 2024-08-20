@@ -1,4 +1,5 @@
 module LocalK_mod
+    ! 该程序已经全面修改过了！！！
     use Multiply_mod
     implicit none
     
@@ -39,7 +40,7 @@ contains
         real(kind=8), external :: ranf
         complex(kind=8) :: Proddet
         complex(kind=8), dimension(Norb, Norb) :: Prod, Prodinv, Gr_local, mat_tmp
-        complex(kind=8) :: Vhlp(2, Ndim), Uhlp(Ndim, 2), temp(Ndim, 2), Diff(Ndim, Ndim)
+        complex(kind=8) :: Vhlp(4, Ndim), Uhlp(Ndim, 4), temp(Ndim, 4), Diff(Ndim, Ndim) ! 为Vhlp, Uhlp, temp 增加了2维
         real(kind=8) :: ratio_fermion, ratio_boson, ratio_re, ratio_re_abs
         real(kind=8) :: random, Xdif, xflip
         integer :: ns, P(Norb), j, no, sign, nl, nr, nn
@@ -78,10 +79,11 @@ contains
             enddo
         enddo
         ! 手动计算行列式
-        Proddet = Prod(1,1) * Prod(2,2) - Prod(1,2) * Prod(2,1)
+        Proddet = determinant_4x4(Prod)
+        ! Proddet = Prod(1,1) * Prod(2,2) - Prod(1,2) * Prod(2,1)
         ! 费米子部分的ratio，已经进行了平方
         ratio_fermion = real(Proddet * dconjg(Proddet))
-! Calculate total Metropolis ratio     
+! Calculate total Metropolis ratio
         ratio_boson = NsigL_K%bosonratio(phi_new, ii, ntau, Latt)
         ratio_re = dble(ratio_fermion * ratio_boson)
         ! 防止符号问题
@@ -91,21 +93,25 @@ contains
         ! 接受更新
         if (ratio_re_abs .gt. random) then
             call Acc_Kl%count(.true.)
-            Prodinv(1,1) = Prod(2,2)
-            Prodinv(2,2) = Prod(1,1)
-            Prodinv(1,2) = - Prod(1,2)
-            Prodinv(2,1) = - Prod(2,1)
+            ! Prodinv(1,1) = Prod(2,2)
+            ! Prodinv(2,2) = Prod(1,1)
+            ! Prodinv(1,2) = - Prod(1,2)
+            ! Prodinv(2,1) = - Prod(2,1)
+            Prodinv = adjugate_4x4(Prod) ! 计算伴随矩阵
             Prodinv = Prodinv / Proddet
             Uhlp = dcmplx(0.d0, 0.d0); Vhlp = dcmplx(0.d0, 0.d0)
             temp = dcmplx(0.d0, 0.d0); Diff = dcmplx(0.d0, 0.d0)
 ! Vhlp(1:2, 1:Ndim) = Del(1:2) * (1 - Grup)(P(1):P(2), 1:Ndim); Uhlp(1:Ndim, 1:2) = Grup(1:Ndim, P(1):P(2))
-            do no = 1, Norb
+            do no = 1, Norb * Nspin
                 do j = 1, Ndim
                     Uhlp(j, no) = Gr(j, P(no))
-                    Vhlp(no, j) = - Op_K%Delta(no, 1) * Gr(P(1), j) - Op_K%Delta(no, 2) * Gr(P(2), j)
+                    Vhlp(no, j) = - Op_K%Delta(no, 1) * Gr(P(1), j) - Op_K%Delta(no, 2) * Gr(P(2), j) &
+                        - Op_K%Delta(no, 3) * Gr(P(3), j) - Op_K%Delta(no, 4) * Gr(P(4), j)
                 enddo
                 Vhlp(no, P(1)) = Vhlp(no, P(1)) + Op_K%Delta(no, 1)
                 Vhlp(no, P(2)) = Vhlp(no, P(2)) + Op_K%Delta(no, 2)
+                Vhlp(no, P(3)) = Vhlp(no, P(3)) + Op_K%Delta(no, 3)
+                Vhlp(no, P(4)) = Vhlp(no, P(4)) + Op_K%Delta(no, 4)
             enddo
             call mmult(temp, Uhlp, Prodinv)
             call mmult(Diff, temp, Vhlp)
@@ -172,4 +178,53 @@ contains
         endif
         return
     end subroutine LocalK_therm
+
+    ! 计算4x4矩阵的行列式
+    real(8) function determinant_4x4(A)
+        real(8), dimension(4, 4), intent(in) :: A
+        determinant_4x4 = A(1,1) * cofactor(A, 1, 1) - A(1,2) * cofactor(A, 1, 2) &
+                    + A(1,3) * cofactor(A, 1, 3) - A(1,4) * cofactor(A, 1, 4)
+    end function determinant_4x4
+
+    ! 计算4x4矩阵的伴随矩阵
+    real(8) function adjugate_4x4(A)
+        real(8), dimension(4, 4), intent(in) :: A
+        real(8), dimension(4, 4) :: adj
+        integer :: i, j
+        do i = 1, 4
+            do j = 1, 4
+                adj(j, i) = cofactor(A, i, j) ! 计算余子式并转置
+            end do
+        end do
+        adjugate_4x4 = adj
+    end function adjugate_4x4
+
+    ! 计算给定位置 (i, j) 的余子式
+    real(8) function cofactor(A, i, j)
+        real(8), dimension(4, 4), intent(in) :: A
+        integer, intent(in) :: i, j
+        real(8), dimension(3, 3) :: minor
+        integer :: m, n, p, q
+        m = 1
+        do p = 1, 4
+            if (p == i) cycle
+            n = 1
+            do q = 1, 4
+                if (q == j) cycle
+                minor(m, n) = A(p, q)
+                n = n + 1
+            end do
+            m = m + 1
+        end do
+        cofactor = (-1.0d0)**(i + j) * determinant_3x3(minor)
+    end function cofactor
+
+    ! 计算3x3矩阵的行列式
+    real(8) function determinant_3x3(minor)
+        real(8), dimension(3, 3), intent(in) :: minor
+        determinant_3x3 = minor(1,1) * (minor(2,2) * minor(3,3) - minor(2,3) * minor(3,2)) &
+                - minor(1,2) * (minor(2,1) * minor(3,3) - minor(2,3) * minor(3,1)) &
+                + minor(1,3) * (minor(2,1) * minor(3,2) - minor(2,2) * minor(3,1))
+    end function determinant_3x3
+
 end module LocalK_mod
