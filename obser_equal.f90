@@ -116,7 +116,7 @@ contains
                 if (Latt%b_list(ii, 2) == 1) sign = 1
                 if (Latt%b_list(ii, 2) == 2) sign = -1
                 do nt = 1, Ltrot
-                    Phisum(nb) = Phisum(nb) + NsigL_K%phi(nb, ii, nt) * sign
+                    Phisum(nb) = Phisum(nb) + NsigL_K%phi(nb, ii, nt) * dble(sign) / dble(Ndim * Nboson)
                 enddo
             enddo
         enddo
