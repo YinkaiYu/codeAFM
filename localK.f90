@@ -179,6 +179,7 @@ contains
 
     ! 计算复矩阵的行列式
     function determinant_cmplx(A) result(det)
+        use MyMats
         complex(kind=8), dimension(:,:), intent(in) :: A
         complex(kind=8) :: det
         complex(kind=8), dimension(size(A,1), size(A,2)) :: LU
@@ -204,6 +205,7 @@ contains
 
     ! 计算复矩阵的逆
     function inverse_cmplx(A) result(invA)
+        use MyMats
         complex(kind=8), dimension(:,:), intent(in) :: A
         complex(kind=8), dimension(size(A,1), size(A,2)) :: invA
         integer, dimension(size(A,1)) :: ipiv
