@@ -70,7 +70,7 @@ contains
 ! Local: 
         complex(kind=8), dimension(Ndim, Ndim) :: Grupc, Grup
         real(kind=8), dimension(Ndim) :: tmpd
-        integer :: i, ii, no, ns, i1, nf, sign, iy, nt
+        integer :: i, ii, no, ns, i1, nf, sign, iy, nt, nb
         real(kind=8) :: tmp, Ai, Phisum(Nboson)
         complex(kind=8) :: phase_p, phase_m
         

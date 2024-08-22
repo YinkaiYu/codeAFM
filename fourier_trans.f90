@@ -319,13 +319,13 @@ contains
         call MPI_REDUCE(Obs%spin_occ, Collect2prime, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%spin_occ = Collect2prime/dble(ISIZE)
         
-        Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
+        ! Collect1prime = 0.d0
+        ! call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        ! if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
         
-        Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_order, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
+        ! Collect1prime = 0.d0
+        ! call MPI_REDUCE(Obs%spin_order, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        ! if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
         
         Collect0 = 0.d0
         call MPI_REDUCE(Obs%Phi2, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)

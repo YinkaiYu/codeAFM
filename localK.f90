@@ -194,7 +194,7 @@ contains
         call zgetrf(n, n, LU, n, ipiv, info)
         
         ! 初始化行列式为1
-        det = (1.0d0_8, 0.0d0_8)
+        det = (1.0d0, 0.0d0)
         
         ! 计算行列式，乘以对角线元素
         do i = 1, n
