@@ -1,0 +1,19 @@
+1.0         0.7         1.0         0.45        0.47        -0.47       2
+10          10          200         10.0
+10          10          200
+10          10          1           1.31
+.false.     0    
+.false.     500          0.88         0.88      0.88
+.false.     6            1.29         1.29      1.29
+0.1         2            -0.8         -0.8      -0.8
+1.0
+
+mass        lambda      hopping1    hopping2    mu1         mu2         Nflavor
+Nlx         Nly         Ltrot       Beta
+NlxTherm    NlyTherm    LtrotTherm
+Nwrap       Nbin        Nsweep      valr0
+is_tau      Nthermal
+is_warm     Nwarm       valrt(1)    valrt(2)    valrt(3)
+is_global   Nglobal     valrs(1)    valrs(2)    valrs(3)
+inconf      absolute    init(1)     init(2)     init(3)
+NB_field
