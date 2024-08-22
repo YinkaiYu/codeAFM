@@ -7,7 +7,7 @@ SUFFIX=
 LF = -mkl
 # -openmp 
 #LF =  -q64  
-HOME = ../../../Lib_90_new
+HOME = /home/zxli_1/Lib_90_new
 LIBS= $(HOME)/Modules/modules_90.a \
       $(HOME)/MyEis/libeis.a \
       $(HOME)/MyNag/libnag.a \
