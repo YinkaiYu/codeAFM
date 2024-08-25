@@ -70,7 +70,7 @@ contains
 ! Local: 
         complex(kind=8), dimension(Ndim, Ndim) :: Grupc, Grup
         real(kind=8), dimension(Ndim) :: tmpd
-        integer :: i, ii, no, ns, i1, nf, sign, iy, nt
+        integer :: i, ii, no, ns, i1, nf, sign, iy, nt, nb
         real(kind=8) :: tmp, Ai, Phisum(Nboson)
         complex(kind=8) :: phase_p, phase_m
         
@@ -116,7 +116,7 @@ contains
                 if (Latt%b_list(ii, 2) == 1) sign = 1
                 if (Latt%b_list(ii, 2) == 2) sign = -1
                 do nt = 1, Ltrot
-                    Phisum(nb) = Phisum(nb) + NsigL_K%phi(nb, ii, nt) * sign
+                    Phisum(nb) = Phisum(nb) + NsigL_K%phi(nb, ii, nt) * dble(sign) / dble(Ndim * Nboson)
                 enddo
             enddo
         enddo

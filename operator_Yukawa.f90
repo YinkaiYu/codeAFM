@@ -90,7 +90,7 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb * Nspin), ii, no, j, sign, nn ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), ii, no, j, sign, nn, ns ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(Norb * Nspin, Ndim) :: Vhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
@@ -135,7 +135,7 @@ contains
         real(kind=8), dimension(Nboson, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: ntau, nflag
 ! Local: 
-        integer :: P(Norb * Nspin), j, ii, no, sign, nn ! 新加了2个P，用于遍历不同自旋的轨道
+        integer :: P(Norb * Nspin), j, ii, no, sign, nn, ns ! 新加了2个P，用于遍历不同自旋的轨道
         real(kind=8), dimension(Nboson) :: vec
         complex(kind=8), dimension(Ndim, Norb * Nspin) :: Uhlp ! 2 + 2 是因为新加了2个P，用于遍历不同自旋的轨道
 
@@ -148,7 +148,7 @@ contains
             do ns = 1, Nspin
                 do no = 1, Norb
                     nn = nn + 1
-                    P(nn) = Latt%dim_list(ii, no, ns)
+                    P(nn) = Latt%inv_dim_list(ii, no, ns)
                 enddo
             enddo
 

@@ -38,7 +38,7 @@ contains
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
         complex(kind=8) :: Z
-        integer :: i, ii, i_0, i_n, ix, iy, nf, no
+        integer :: i, ii, i_0, i_n, ix, iy, nf, no, ns
         
         HamT = dcmplx(0.d0, 0.d0)
 !  nearest bond hopping
