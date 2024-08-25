@@ -3,7 +3,7 @@ module MyLattice ! definition on space geometry
     implicit none
     
     type, public :: SquareLattice
-        integer, dimension(:,:,:), allocatable :: inv_dim_list
+        integer, dimension(:,:,:), allocatable :: inv_dim_list, 
         integer, dimension(:,:), allocatable :: dim_list, o_list, inv_o_list, n_list, inv_n_list, b_list, inv_b_list, t_list, inv_t_list
         integer, dimension(:,:), allocatable :: n_Bonds, nn_bonds, LT_bonds, imj
         real(kind=8), dimension(:,:), allocatable :: xk_v, aimj_v, k_dot_r
@@ -24,7 +24,7 @@ contains
         integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny, ns
         integer :: n1, n2, ndix, ii, jj, ix, jx, iy, jy, nt, iit, imjx, imjy
         
-        allocate(Latt%dim_list(Ndim, 1:2), Latt%inv_dim_list(Lq, Norb, Nspin))
+        allocate(Latt%dim_list(Ndim, 1:2), Latt%inv_dim_list(Lq, Norb))
         nc = 0
         do ns = 1, Nspin ! ns is the spin index
             do no = 1, Norb ! no is the orbital index

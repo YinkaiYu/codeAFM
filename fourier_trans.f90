@@ -262,14 +262,6 @@ contains
         filek = "bond_occ"
         call this%write_real(Obs%bond_occ, filek)
             
-        open(unit=80, file='Phi2', status='unknown', action="write", position="append")
-        write(80,*) Obs%Phi2
-        close(80)
-            
-        open(unit=80, file='Phi4', status='unknown', action="write", position="append")
-        write(80,*) Obs%Phi4
-        close(80)
-            
         open(unit=80, file='filling', status='unknown', action="write", position="append")
         write(80,*) Obs%density
         close(80)
@@ -319,21 +311,13 @@ contains
         call MPI_REDUCE(Obs%spin_occ, Collect2prime, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%spin_occ = Collect2prime/dble(ISIZE)
         
-        ! Collect1prime = 0.d0
-        ! call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        ! if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
+        Collect1prime = 0.d0
+        call MPI_REDUCE(Obs%spin_avg, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
         
-        ! Collect1prime = 0.d0
-        ! call MPI_REDUCE(Obs%spin_order, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        ! if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
-        
-        Collect0 = 0.d0
-        call MPI_REDUCE(Obs%Phi2, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%Phi2 = Collect0/dble(ISIZE)
-        
-        Collect0 = 0.d0
-        call MPI_REDUCE(Obs%Phi4, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%Phi4 = Collect0/dble(ISIZE)
+        Collect1prime = 0.d0
+        call MPI_REDUCE(Obs%spin_order, Collect1prime, Nboson, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
         
         Collect0 = 0.d0
         call MPI_REDUCE(Obs%density, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
