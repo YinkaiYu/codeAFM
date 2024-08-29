@@ -11,6 +11,7 @@ module LocalK_mod
     
 contains
     subroutine LocalK_init()
+        write(6,*) 'subroutine name LocalK_init'
         call Acc_Kl%init()
         call Acc_Kt%init()
         allocate(phi_new(Nboson, Lq, Ltrot))
@@ -18,11 +19,13 @@ contains
     end subroutine LocalK_init
     
     subroutine LocalK_clear()
+        write(6,*) 'subroutine name LocalK_clear'
         deallocate(phi_new)
         return
     end subroutine LocalK_clear
     
     subroutine LocalK_reset()
+        write(6,*) 'subroutine name LocalK_reset'
         call Acc_Kl%reset()
         call Acc_Kt%reset()
         phi_new = NsigL_K%phi
@@ -46,6 +49,7 @@ contains
         integer :: ns, P(Norb * Nspin), j, no, sign, nl, nr, nn
         real(kind=8), dimension(Nboson) :: vec_new, vec_old
 
+        write(6,*) 'subroutine name LocalK_metro'  ! 输出信息
 ! Local update on a two-component spin vector on space-time (ii, ntau)
         do ns = 1, Nboson
             xflip = ranf(iseed)
@@ -130,6 +134,7 @@ contains
         integer, intent(inout) :: iseed
         integer, intent(in) :: nt
         integer :: ii
+        write(6,*) 'subroutine name LocalK_prop_L' ! 输出子程序名称
         do ii = Lq, 1, -1
             call LocalK_metro(Prop%Gr, iseed, ii, nt)
         enddo
@@ -144,6 +149,7 @@ contains
         integer, intent(inout) :: iseed
         integer, intent(in) :: nt
         integer :: ii
+        write(6,*) 'subroutine name LocalK_prop_R' ! 输出子程序名称
         call Op_K%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, 1)
         call Op_K%mmult_L(Prop%Gr, Latt, NsigL_K%phi, nt, -1)
         do ii = 1, Lq
@@ -161,7 +167,7 @@ contains
         real(kind=8), external :: ranf
         real(kind=8) :: xflip, random, Xdif, ratio_boson
         integer :: ns
-
+        write(6,*) 'subroutine name LocalK_therm' ! 输出子程序名称
         do ns = 1, Nboson
             xflip = ranf(iseed)
             Xdif = dble((xflip - 0.5) * abs(valrt(ns)))

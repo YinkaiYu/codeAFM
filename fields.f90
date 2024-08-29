@@ -158,7 +158,6 @@ contains
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
         real(kind=8), dimension(Nboson, LqTherm, LtrotTherm) :: phi_therm
-        
         call conf_therm_in(phi_therm, iseed)
         call conf_transfer(Conf%phi, phi_therm, Latt)
         return
