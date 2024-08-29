@@ -1,6 +1,7 @@
 module NonInteract
     ! 该程序已经全面修改过了！！！
     use MyLattice
+    use MyMats
     implicit none
 
     public
@@ -115,11 +116,13 @@ contains
         class(SquareLattice), intent(in) :: Latt
 ! Local: 
 !        real(kind=8) :: degen, en_free
-        integer :: i, nl, nr
+        integer :: i, nl, nr, j
         complex(kind=8), dimension(Ndim, Ndim) :: HamT, Hlp1, Hlp1dag, temp1, temp2
+        complex(kind=8), dimension(Ndim, Ndim) :: temp_expT_P, temp_expT_M
         real(kind=8), dimension(Ndim) :: WC
         complex(kind=8), dimension(Ndim) :: dmat1, dmat2
-        
+
+        write(6,*) 'now in step diag' ! 输出信息
         call def_HamT(HamT, Latt)
         call diag(HamT, Hlp1, WC)
 
@@ -136,8 +139,27 @@ contains
                 temp2(nl, nr) = Hlp1(nl, nr) * dmat2(nr)
             enddo
         enddo
+
+        open(unit=10, file='temp1.txt', status='unknown', action='write')
+        do i = 1, size(temp1, 1) ! 遍历所有行
+            do j = 1, size(temp1, 2)
+                write(10, *) real(temp1(i, j)), aimag(temp1(i, j))
+            enddo
+        end do
+        close(10)
+        open(unit=90, file='Hlp1dag.txt', status='unknown', action='write')
+        do i = 1, size(Hlp1dag, 1) ! 遍历所有行
+            do j = 1, size(Hlp1dag, 2)
+                write(90, *) real(Hlp1dag(i, j)), aimag(Hlp1dag(i, j))
+            enddo
+        end do
+        close(90)
+
+        write(6,*) 'now in step expTP' ! 输出信息
+        write(6,*) 'size of expTP: (', size(this%expT_P, 1), ', ', size(this%expT_P, 2), ')' ! 输出信息
         ! 将temp1和Hlp1dag相乘得到expT_P
         call mmult(this%expT_P, temp1, Hlp1dag) ! output
+        write(6,*) 'now in step expTM' ! 输出信息
         ! 将temp2和Hlp1dag相乘得到expT_M
         call mmult(this%expT_M, temp2, Hlp1dag) ! output
         return

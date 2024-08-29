@@ -24,15 +24,24 @@ program SpinFluctuation
     call SYSTEM_CLOCK(COUNT_RATE = N_P_SEC)
     call SYSTEM_CLOCK(COUNT = ICPU_1)
 ! initiate
+    write(6,*) 'now in step initiate' ! 输出信息
+    write(6,*) 'now in step Model_init' ! 输出信息
     call Model_init(iseed)
+    write(6,*) 'now in step allocate Prop' ! 输出信息
     allocate(Prop)
+    write(6,*) 'now in step PropMake' ! 输出信息
     call Prop%make()
+    write(6,*) 'now in step allocate WrList' ! 输出信息
     allocate(WrList)
+    write(6,*) 'now in step WrlistMake' ! 输出信息
     call WrList%make()
+    write(6,*) 'now in step Stabilize_init' ! 输出信息
     call Stabilize_init()
+    write(6,*) 'now in step Sweep_localInit' ! 输出信息
     call Sweep_local%init()
     if (is_global) call Sweep_global%init()
 ! boson warm-up
+    write(6,*) 'now in step warm-up' ! 输出信息
     if (is_warm) then
         do nth = 1, Nwarm
             call Sweep_local%therm(iseed)
@@ -42,6 +51,7 @@ program SpinFluctuation
         if (IRANK == 0) write(50,*) "Skipping Bosonic warm-up"
     endif
 ! Sweep
+    write(6,*) 'now in step Sweep' ! 输出信息
     call Sweep_local%pre(Prop, WrList)
     is_beta = .true.; istau_tmp = .false.
     do nbc = 1, Nbin
@@ -52,6 +62,7 @@ program SpinFluctuation
         if (istau_tmp) call Fourier%prtau(Obs_tau)
     enddo
 ! control print
+    write(6,*) 'now in step control print' ! 输出信息
     if (is_global) call Sweep_global%ctrl_print()
     call Sweep_local%ctrl_print_l(istau_tmp)
     collect = 0.d0
@@ -72,6 +83,7 @@ program SpinFluctuation
         write(50,*) 'Tot CPU time                                   :', CPUT
     endif
 ! deallocate
+    write(6,*) 'now in step deallocate' ! 输出信息
     if (is_global) call Sweep_global%clear()
     call Sweep_local%clear()
     call Stabilize_clear()
